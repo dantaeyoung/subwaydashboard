@@ -1,0 +1,12 @@
+# Temporary files
+ferry-gtfs.zip
+*.pyc
+__pycache__/
+
+# macOS
+.DS_Store
+
+# Python
+*.egg-info/
+dist/
+build/
