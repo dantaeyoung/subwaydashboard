@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/Users/provolot/.pyenv/versions/3.10.15/bin/python3
 # <xbar.title>Greenpoint Transit</xbar.title>
 # <xbar.version>v1.0</xbar.version>
 # <xbar.author>Claude</xbar.author>
@@ -48,9 +48,9 @@ def get_ferry_arrivals():
         script_dir = os.path.dirname(os.path.abspath(__file__))
         ferry_script = os.path.join(script_dir, "get_ferry.py")
 
-        # Call the ferry script
+        # Call the ferry script with the same Python interpreter
         result = subprocess.run(
-            ["python3", ferry_script],
+            ["/Users/provolot/.pyenv/versions/3.10.15/bin/python3", ferry_script],
             capture_output=True,
             text=True,
             timeout=10
@@ -98,16 +98,8 @@ def main():
     if ferry["wall_st"]:
         soonest.append(("Ferry→WS", ferry["wall_st"][0]))
 
-    if soonest:
-        # Sort by time and show the soonest
-        soonest.sort(key=lambda x: x[1])
-        name, minutes = soonest[0]
-        if minutes == 0:
-            print(f"🚇 {name}: Now")
-        else:
-            print(f"🚇 {name}: {minutes}min")
-    else:
-        print("🚇 No data")
+    # Menu bar - just show a simple icon
+    print("🚇")
 
     # Separator for dropdown
     print("---")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/Users/provolot/.pyenv/versions/3.10.15/bin/python3
 """Standalone script to get ferry arrival times - called by main script"""
 
 import sys
