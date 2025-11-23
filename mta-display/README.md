@@ -1,6 +1,6 @@
 # MTA G Train Display Generator
 
-Creates an 800x600 PNG image showing real-time G train arrivals at Greenpoint Ave station with current weather.
+Creates an 800x600 PNG image showing real-time G train arrivals at Greenpoint Ave station with current weather. Meant to be used with [kindle-dash](https://github.com/pascalw/kindle-dash) and a jailbroken Kindle.
 
 ![MTA Display Example](schedule_example.png)
 
@@ -12,7 +12,7 @@ Creates an 800x600 PNG image showing real-time G train arrivals at Greenpoint Av
 - **Clean MTA-style design** - Gray background, green G train circles, bold Helvetica font
 - **Antialiased rendering** - Smooth text and graphics
 - **Rotation option** - Landscape (800x600) or portrait (600x800) mode
-
+         
 ## Installation
 
 From the project root directory, using uv (recommended):
