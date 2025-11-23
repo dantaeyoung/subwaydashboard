@@ -1,3 +1,5 @@
+# Warning: VIBECODED
+
 # MTA Train Display Generator
 
 Creates an 800x600 PNG image showing real-time subway train arrivals with current weather. Meant to be used with [kindle-dash](https://github.com/pascalw/kindle-dash) and a jailbroken Kindle.
