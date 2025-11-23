@@ -200,6 +200,10 @@ def create_display_image(output_path="schedule.png", rotate=False):
     # Get cross-platform font paths
     font_paths = get_font_paths()
 
+    # Debug: Print font information
+    print(f"Platform: {platform.system()}")
+    print(f"Font paths: {font_paths}")
+
     # Determine if we can use font index - .ttc files work with index on macOS, but not always on Linux
     is_ttc = font_paths['bold'] and font_paths['bold'].endswith('.ttc')
     is_macos = platform.system() == "Darwin"
@@ -208,6 +212,7 @@ def create_display_image(output_path="schedule.png", rotate=False):
     try:
         if use_font_index:
             # macOS with .ttc - use index parameter for bold
+            print(f"Loading fonts with index parameter (macOS .ttc)")
             header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE, index=1)
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE, index=1)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE, index=1)
@@ -216,14 +221,21 @@ def create_display_image(output_path="schedule.png", rotate=False):
         else:
             # Linux or separate font files (.ttf) - no index parameter
             # Note: On Linux with .ttc, we load it without index (may not get true bold)
+            print(f"Loading fonts without index parameter (Linux or .ttf files)")
+            print(f"Bold font path: {font_paths['bold']}, size: {36 * SCALE}")
             header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE)
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE)
             time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE)
             small_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE)
+        print(f"Fonts loaded successfully!")
+        print(f"Line font size: {line_font.size}")
     except Exception as e:
         # Fallback to default font if fonts are not available
-        print(f"Warning: Could not load fonts ({e}), using default font")
+        print(f"ERROR: Could not load fonts ({e})")
+        import traceback
+        traceback.print_exc()
+        print("Falling back to default font")
         header_font = ImageFont.load_default()
         line_font = ImageFont.load_default()
         dest_font = ImageFont.load_default()
