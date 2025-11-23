@@ -15,10 +15,10 @@ G_TRAIN_GREENPOINT_SOUTH = "G26S"  # Church Ave-bound
 # Display settings
 WIDTH = 800
 HEIGHT = 600
-BG_COLOR = (52, 143, 222)  # Blue background
+BG_COLOR = (106, 115, 122)  # Blue background
 TEXT_COLOR = (255, 255, 255)  # White text
-LINE_COLOR = (0, 177, 64)  # G train green color
-SEPARATOR_COLOR = (30, 100, 160)  # Dark blue separator
+LINE_COLOR = (131, 190, 82)  # G train green color
+SEPARATOR_COLOR = (30, 30, 30)  # Dark blue separator
 HEADER_BG = (30, 30, 30)  # Dark gray footer background
 HEADER_TEXT = (255, 255, 255)  # White header text
 
@@ -170,7 +170,7 @@ def create_display_image(output_path="schedule.png"):
             # Separator goes exactly at the row boundary
             line_y = (idx + 1) * line_height
             draw.line([(0, line_y), (SCALED_WIDTH, line_y)],
-                     fill=SEPARATOR_COLOR, width=3 * SCALE)
+                     fill=SEPARATOR_COLOR, width=8 * SCALE)
 
     # Draw thin footer at bottom with time in bottom left
     footer_height_scaled = 40 * SCALE
