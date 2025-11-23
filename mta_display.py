@@ -8,6 +8,7 @@ from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from nyct_gtfs import NYCTFeed
 import requests
+import sys
 
 # Station IDs
 G_TRAIN_GREENPOINT_NORTH = "G26N"  # Queens-bound
@@ -123,8 +124,13 @@ def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, t
     img.paste(circle_img, (center_x - radius, center_y - radius), circle_img)
 
 
-def create_display_image(output_path="schedule.png"):
-    """Create the MTA display image"""
+def create_display_image(output_path="schedule.png", rotate=False):
+    """Create the MTA display image
+
+    Args:
+        output_path: Path to save the PNG file
+        rotate: If True, rotate the image 90 degrees counter-clockwise
+    """
 
     # Create image at 2x resolution for better text antialiasing
     SCALE = 2
@@ -220,10 +226,16 @@ def create_display_image(output_path="schedule.png"):
     # Scale image down to target size for antialiasing
     img = img.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
 
+    # Rotate 90 degrees counter-clockwise if requested
+    if rotate:
+        img = img.transpose(Image.Transpose.ROTATE_90)
+
     # Save image
     img.save(output_path)
-    print(f"Image saved to {output_path}")
+    print(f"Image saved to {output_path}" + (" (rotated 90° CCW)" if rotate else ""))
 
 
 if __name__ == "__main__":
-    create_display_image()
+    # Check for --rotate flag
+    rotate = "--rotate" in sys.argv or "-r" in sys.argv
+    create_display_image(rotate=rotate)
