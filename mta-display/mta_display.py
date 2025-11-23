@@ -19,13 +19,23 @@ G_TRAIN_GREENPOINT_SOUTH = "G26S"  # Church Ave-bound
 # Display settings
 WIDTH = 800
 HEIGHT = 600
-BG_COLOR = (77, 77, 77)  # Blue background
-TEXT_COLOR = (255, 255, 255)  # White text
+
+
+BG_COLOR = (255, 255, 255)  #  background
+TEXT_COLOR = (0, 0, 0)  # White text
 LINE_COLOR = (131, 190, 82)  # G train green color
 SEPARATOR_COLOR = (30, 30, 30)  # Dark blue separator
 HEADER_BG = (30, 30, 30)  # Dark gray footer background
 HEADER_TEXT = (255, 255, 255)  # White header text
 
+"""
+BG_COLOR = (37, 37, 37)  # Dark background
+TEXT_COLOR = (255, 255, 255)  # White text
+LINE_COLOR = (131, 190, 82)  # G train green color
+SEPARATOR_COLOR = (10, 10, 10)  # Dark blue separator
+HEADER_BG = (10, 10, 10)  # Dark gray footer background
+HEADER_TEXT = (255, 255, 255)  # White header text
+"""
 
 def get_all_trains(limit=4):
     """Get next arrivals for both directions - Queens-bound first, then Church Ave-bound"""
@@ -219,7 +229,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE, index=1)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE, index=1)
             time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE, index=1)
-            small_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE, index=0)
+            small_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE, index=1)
         else:
             # Linux or separate font files (.ttf) - no index parameter
             # Note: On Linux with .ttc, we load it without index (may not get true bold)
@@ -229,7 +239,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE)
             time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE)
-            small_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE)
+            small_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE)
         print(f"Fonts loaded successfully!")
         print(f"Line font size: {line_font.size}")
     except Exception as e:
