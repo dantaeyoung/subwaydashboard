@@ -69,7 +69,7 @@ def get_all_trains(limit=4):
         return []
 
 
-def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font):
+def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font, font_index=0):
     """Draw an antialiased circle with centered text"""
     # Create a high-resolution temporary image (4x scale for better antialiasing)
     scale = 4
@@ -80,10 +80,10 @@ def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, t
     # Draw circle at high resolution
     circle_draw.ellipse([0, 0, size, size], fill=fill_color)
 
-    # Draw text at high resolution - scale up the font
-    scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale)
+    # Draw text at high resolution - scale up the font with proper index for bold
+    scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale, index=font_index)
     # Use anchor='mm' to center text at the middle
-    circle_draw.text((size // 2, size // 2), text, fill=(255, 255, 255),
+    circle_draw.text((size // 2, size // 2 + 35), text, fill=(255, 255, 255),
                     font=scaled_font, anchor='mm')
 
     # Resize down with high-quality antialiasing
@@ -109,7 +109,7 @@ def create_display_image(output_path="schedule.png"):
         # Bold fonts for most text
         header_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36 * SCALE, index=1)  # Bold
         line_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 62 * SCALE, index=1)  # Bold
-        dest_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 55 * SCALE, index=1)  # Bold
+        dest_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 50 * SCALE, index=1)  # Bold
         # Regular fonts for time numbers and "min"
         time_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 60 * SCALE, index=1)
         small_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 22 * SCALE)
@@ -143,10 +143,10 @@ def create_display_image(output_path="schedule.png"):
         circle_y = y_pos + 30 * SCALE
         circle_radius = 50 * SCALE
         draw_antialiased_circle(img, circle_x, circle_y, circle_radius,
-                               LINE_COLOR, "G", line_font)
+                               LINE_COLOR, "G", line_font, font_index=1)
 
         # Draw destination
-        draw.text((140 * SCALE, y_pos + 10), destination, fill=TEXT_COLOR, font=dest_font)
+        draw.text((140 * SCALE, y_pos + 18), destination, fill=TEXT_COLOR, font=dest_font)
 
         # Draw arrival time
         time_text = str(minutes) if minutes > 0 else "Now"
