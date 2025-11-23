@@ -31,6 +31,24 @@ Required dependencies:
 - `nyct-gtfs` - Real-time G train data
 - `requests` - Weather API calls
 
+### Font Requirements
+
+**For best results (recommended):** Place a copy of `Helvetica.ttc` in the `mta-display/` folder. The script will automatically use it for true MTA-style rendering across all platforms.
+
+**Without Helvetica.ttc:** The script will fall back to system fonts:
+- macOS: Uses system Helvetica
+- Linux: Automatically tries DejaVu Sans, Liberation Sans, or FreeSans
+
+**On Linux** (if not using Helvetica.ttc), install system fonts:
+```bash
+sudo apt-get install fonts-dejavu fonts-liberation
+```
+
+**Note:** Helvetica is a proprietary font. You can obtain it from:
+- macOS: `/System/Library/Fonts/Helvetica.ttc`
+- Commercial license from Monotype
+- Adobe Fonts subscription
+
 ## Usage
 
 ### Basic Usage

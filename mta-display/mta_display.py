@@ -9,6 +9,8 @@ from PIL import Image, ImageDraw, ImageFont
 from nyct_gtfs import NYCTFeed
 import requests
 import sys
+import os
+import platform
 
 # Station IDs
 G_TRAIN_GREENPOINT_NORTH = "G26N"  # Queens-bound
@@ -100,6 +102,50 @@ def get_weather():
         return ""
 
 
+def get_font_paths():
+    """Get cross-platform font paths - prioritizes local Helvetica.ttc"""
+    # First, check for local Helvetica.ttc in the same directory as this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_helvetica = os.path.join(script_dir, "Helvetica.ttc")
+
+    if os.path.exists(local_helvetica):
+        # Use the local bundled Helvetica font
+        return {
+            'regular': local_helvetica,
+            'bold': local_helvetica  # Same file, use index parameter to select bold
+        }
+
+    # Fall back to system fonts
+    system = platform.system()
+
+    if system == "Darwin":  # macOS
+        return {
+            'regular': "/System/Library/Fonts/Helvetica.ttc",
+            'bold': "/System/Library/Fonts/Helvetica.ttc"
+        }
+    elif system == "Linux":
+        # Try common Linux font paths
+        linux_fonts = [
+            ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+            ("/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+             "/usr/share/fonts/liberation/LiberationSans-Bold.ttf"),
+            ("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+             "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"),
+            ("/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+             "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"),
+        ]
+        for regular_font, bold_font in linux_fonts:
+            if os.path.exists(regular_font):
+                # Use bold if it exists, otherwise use regular for both
+                if not os.path.exists(bold_font):
+                    bold_font = regular_font
+                return {'regular': regular_font, 'bold': bold_font}
+
+    # Fallback - try to find any truetype font
+    return {'regular': None, 'bold': None}
+
+
 def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font, font_index=0):
     """Draw an antialiased circle with centered text"""
     # Create a high-resolution temporary image (4x scale for better antialiasing)
@@ -112,7 +158,16 @@ def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, t
     circle_draw.ellipse([0, 0, size, size], fill=fill_color)
 
     # Draw text at high resolution - scale up the font with proper index for bold
-    scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale, index=font_index)
+    try:
+        # Try with font index (works for .ttc files on macOS)
+        scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale, index=font_index)
+    except (OSError, TypeError):
+        # Fallback without index (for separate .ttf files on Linux)
+        try:
+            scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale)
+        except:
+            scaled_font = text_font
+
     # Use anchor='mm' to center text at the middle
     circle_draw.text((size // 2, size // 2 + 35), text, fill=(255, 255, 255),
                     font=scaled_font, anchor='mm')
@@ -140,17 +195,30 @@ def create_display_image(output_path="schedule.png", rotate=False):
     img = Image.new('RGB', (SCALED_WIDTH, SCALED_HEIGHT), BG_COLOR)
     draw = ImageDraw.Draw(img)
 
-    # Use Helvetica fonts at 2x size
+    # Get cross-platform font paths
+    font_paths = get_font_paths()
+
+    # Determine if we're using a .ttc font collection (needs index) or separate .ttf files
+    use_font_index = font_paths['bold'] and font_paths['bold'].endswith('.ttc')
+
     try:
-        # Bold fonts for most text
-        header_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36 * SCALE, index=1)  # Bold
-        line_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 62 * SCALE, index=1)  # Bold
-        dest_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 50 * SCALE, index=1)  # Bold
-        # Regular fonts for time numbers and "min"
-        time_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 60 * SCALE, index=1)
-        small_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 22 * SCALE)
-    except:
-        # Fallback to default font if Helvetica is not available
+        if use_font_index:
+            # Using font collection (.ttc) - use index parameter for bold
+            header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE, index=1)
+            line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE, index=1)
+            dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE, index=1)
+            time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE, index=1)
+            small_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE, index=0)
+        else:
+            # Using separate font files (.ttf) - no index parameter
+            header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE)
+            line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE)
+            dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE)
+            time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE)
+            small_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE)
+    except Exception as e:
+        # Fallback to default font if fonts are not available
+        print(f"Warning: Could not load fonts ({e}), using default font")
         header_font = ImageFont.load_default()
         line_font = ImageFont.load_default()
         dest_font = ImageFont.load_default()
