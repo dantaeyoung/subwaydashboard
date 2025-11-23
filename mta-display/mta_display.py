@@ -182,12 +182,13 @@ def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, t
     img.paste(circle_img, (center_x - radius, center_y - radius), circle_img)
 
 
-def create_display_image(output_path="schedule.png", rotate=False):
+def create_display_image(output_path="schedule.png", rotate=False, grayscale=False):
     """Create the MTA display image
 
     Args:
         output_path: Path to save the PNG file
         rotate: If True, rotate the image 90 degrees counter-clockwise
+        grayscale: If True, make the image grayscale
     """
 
     # Create image at 2x resolution for better text antialiasing
@@ -316,6 +317,9 @@ def create_display_image(output_path="schedule.png", rotate=False):
     if rotate:
         img = img.transpose(Image.Transpose.ROTATE_90)
 
+    if grayscale:
+        img = img.convert("L")  # 8-bit grayscale
+
     # Save image
     img.save(output_path)
     print(f"Image saved to {output_path}" + (" (rotated 90° CCW)" if rotate else ""))
@@ -324,4 +328,5 @@ def create_display_image(output_path="schedule.png", rotate=False):
 if __name__ == "__main__":
     # Check for --rotate flag
     rotate = "--rotate" in sys.argv or "-r" in sys.argv
-    create_display_image(rotate=rotate)
+    grayscale = "--grayscale" in sys.argv or "-g" in sys.argv
+    create_display_image(rotate=rotate, grayscale=grayscale)
