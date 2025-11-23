@@ -38,6 +38,12 @@ Creates an 800x600 image showing G train arrivals and weather.
 
 ### Install Dependencies
 
+Using uv (recommended):
+```bash
+uv pip install -r requirements.txt
+```
+
+Or using pip:
 ```bash
 pip3 install -r requirements.txt
 ```
@@ -72,7 +78,12 @@ python3 mta_display.py --rotate
 - `Pillow` - Image generation (for display generator)
 - `requests` - Weather API calls (for display generator)
 
-Install all:
+Install all with uv (recommended):
+```bash
+uv pip install -r requirements.txt
+```
+
+Or with pip:
 ```bash
 pip3 install -r requirements.txt
 ```

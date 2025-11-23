@@ -22,8 +22,13 @@ brew install swiftbar
 
 ### 2. Install Python Dependencies
 
-From the project root directory:
+From the project root directory, using uv (recommended):
 
+```bash
+uv pip install -r requirements.txt
+```
+
+Or using pip:
 ```bash
 pip3 install -r requirements.txt
 ```
