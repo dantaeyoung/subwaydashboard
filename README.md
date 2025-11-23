@@ -8,8 +8,6 @@ This repository contains two separate projects:
 
 **Real-time transit tracker for your macOS menu bar**
 
-![SwiftBar Screenshot](schedule.png)
-
 Shows G train and NYC Ferry arrivals in your menu bar using SwiftBar.
 
 **Features:**
@@ -24,7 +22,7 @@ Shows G train and NYC Ferry arrivals in your menu bar using SwiftBar.
 
 **PNG image generator for digital displays**
 
-![MTA Display Example](schedule.png)
+![MTA Display Example](mta-display/schedule_example.png)
 
 Creates an 800x600 image showing G train arrivals and weather.
 

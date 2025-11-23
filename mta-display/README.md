@@ -2,7 +2,7 @@
 
 Creates an 800x600 PNG image showing real-time G train arrivals at Greenpoint Ave station with current weather.
 
-![MTA Display Example](../schedule.png)
+![MTA Display Example](schedule_example.png)
 
 ## Features
 

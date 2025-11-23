@@ -6,6 +6,7 @@ __pycache__/
 # Generated output
 schedule.png
 *.png
+!mta-display/schedule_example.png
 
 # macOS
 .DS_Store
