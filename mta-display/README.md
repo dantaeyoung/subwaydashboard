@@ -33,11 +33,12 @@ Required dependencies:
 
 ### Font Requirements
 
-**For best results (recommended):** Place a copy of `Helvetica.ttc` in the `mta-display/` folder. The script will automatically use it for true MTA-style rendering across all platforms.
+**For best results (recommended):** Place a copy of `Helvetica.ttc` in the `mta-display/` folder. The script will automatically use it for true MTA-style rendering.
 
-**Without Helvetica.ttc:** The script will fall back to system fonts:
-- macOS: Uses system Helvetica
-- Linux: Automatically tries DejaVu Sans, Liberation Sans, or FreeSans
+**Font rendering by platform:**
+- **macOS with Helvetica.ttc**: Full support including bold variants
+- **Linux with Helvetica.ttc**: Helvetica is used but may not render bold properly (Pillow limitation with .ttc files on Linux)
+- **Linux without Helvetica.ttc**: Uses system fonts (DejaVu Sans, Liberation Sans, or FreeSans)
 
 **On Linux** (if not using Helvetica.ttc), install system fonts:
 ```bash

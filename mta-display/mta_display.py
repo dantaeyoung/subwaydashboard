@@ -146,7 +146,7 @@ def get_font_paths():
     return {'regular': None, 'bold': None}
 
 
-def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font, font_index=0):
+def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font, font_index=0, use_font_index=True):
     """Draw an antialiased circle with centered text"""
     # Create a high-resolution temporary image (4x scale for better antialiasing)
     scale = 4
@@ -157,16 +157,18 @@ def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, t
     # Draw circle at high resolution
     circle_draw.ellipse([0, 0, size, size], fill=fill_color)
 
-    # Draw text at high resolution - scale up the font with proper index for bold
+    # Draw text at high resolution - scale up the font
     try:
-        # Try with font index (works for .ttc files on macOS)
-        scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale, index=font_index)
-    except (OSError, TypeError):
-        # Fallback without index (for separate .ttf files on Linux)
-        try:
+        if use_font_index:
+            # Use font index for .ttc files on macOS
+            scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale, index=font_index)
+        else:
+            # Don't use index - for .ttf files or .ttc on Linux
             scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale)
-        except:
-            scaled_font = text_font
+    except Exception as e:
+        # Last resort fallback - just use the original font
+        print(f"Warning: Could not scale font for circle ({e}), using original size")
+        scaled_font = text_font
 
     # Use anchor='mm' to center text at the middle
     circle_draw.text((size // 2, size // 2 + 35), text, fill=(255, 255, 255),
@@ -198,19 +200,22 @@ def create_display_image(output_path="schedule.png", rotate=False):
     # Get cross-platform font paths
     font_paths = get_font_paths()
 
-    # Determine if we're using a .ttc font collection (needs index) or separate .ttf files
-    use_font_index = font_paths['bold'] and font_paths['bold'].endswith('.ttc')
+    # Determine if we can use font index - .ttc files work with index on macOS, but not always on Linux
+    is_ttc = font_paths['bold'] and font_paths['bold'].endswith('.ttc')
+    is_macos = platform.system() == "Darwin"
+    use_font_index = is_ttc and is_macos
 
     try:
         if use_font_index:
-            # Using font collection (.ttc) - use index parameter for bold
+            # macOS with .ttc - use index parameter for bold
             header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE, index=1)
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE, index=1)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE, index=1)
             time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE, index=1)
             small_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE, index=0)
         else:
-            # Using separate font files (.ttf) - no index parameter
+            # Linux or separate font files (.ttf) - no index parameter
+            # Note: On Linux with .ttc, we load it without index (may not get true bold)
             header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE)
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE)
@@ -247,7 +252,7 @@ def create_display_image(output_path="schedule.png", rotate=False):
         circle_y = y_pos + 30 * SCALE
         circle_radius = 50 * SCALE
         draw_antialiased_circle(img, circle_x, circle_y, circle_radius,
-                               LINE_COLOR, "G", line_font, font_index=1)
+                               LINE_COLOR, "G", line_font, font_index=1, use_font_index=use_font_index)
 
         # Draw destination
         draw.text((140 * SCALE, y_pos + 18), destination, fill=TEXT_COLOR, font=dest_font)
