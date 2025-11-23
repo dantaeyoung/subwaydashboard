@@ -21,14 +21,16 @@ WIDTH = 800
 HEIGHT = 600
 
 
+#"""
 BG_COLOR = (255, 255, 255)  #  background
 TEXT_COLOR = (0, 0, 0)  # White text
 LINE_COLOR = (131, 190, 82)  # G train green color
-SEPARATOR_COLOR = (30, 30, 30)  # Dark blue separator
+SEPARATOR_COLOR = (230, 230, 230)  # Dark blue separator
 HEADER_BG = (30, 30, 30)  # Dark gray footer background
 HEADER_TEXT = (255, 255, 255)  # White header text
 
 """
+
 BG_COLOR = (37, 37, 37)  # Dark background
 TEXT_COLOR = (255, 255, 255)  # White text
 LINE_COLOR = (131, 190, 82)  # G train green color
