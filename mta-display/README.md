@@ -1,17 +1,12 @@
-# MTA G Train Display Generator
+# Warning: VIBECODED
 
-Creates an 800x600 PNG image showing real-time G train arrivals at Greenpoint Ave station with current weather.
+# MTA Train Display Generator
+
+Creates an 800x600 PNG image showing real-time subway train arrivals with current weather. Meant to be used with [kindle-dash](https://github.com/pascalw/kindle-dash) and a jailbroken Kindle.
+
+(Station is hardcoded)
 
 ![MTA Display Example](schedule_example.png)
-
-## Features
-
-- **4 G Train arrivals** - 2 Court Square-bound, 2 Church Ave-bound
-- **Current weather** - Temperature and conditions from National Weather Service
-- **Current time** - Displayed in footer
-- **Clean MTA-style design** - Gray background, green G train circles, bold Helvetica font
-- **Antialiased rendering** - Smooth text and graphics
-- **Rotation option** - Landscape (800x600) or portrait (600x800) mode
 
 ## Installation
 
@@ -83,32 +78,3 @@ Edit `mta_display.py` to customize:
 - **Number of trains** - Adjust `limit` parameter in `get_all_trains()`
 - **Location** - Update coordinates in `get_weather()` for different location
 
-## How It Works
-
-1. Fetches real-time G train data from MTA's GTFS feed using `nyct-gtfs`
-2. Gets current weather from National Weather Service API (no API key required)
-3. Renders at 2x resolution for antialiasing
-4. Draws:
-   - Green G train circles with bold text
-   - Station names (Court Square / Church Ave) in bold
-   - Arrival times with "MIN" label
-   - Dark separators between entries
-   - Footer with time and weather
-5. Scales down to target size with high-quality filtering
-6. Optionally rotates 90° CCW for portrait displays
-
-## Technical Details
-
-- **Font**: Helvetica (bold for stations, regular for times)
-- **Antialiasing**: 2x supersampling with LANCZOS downscaling
-- **Weather**: National Weather Service API (free, no key needed)
-- **MTA Data**: GTFS realtime feed for G train
-- **Station**: Greenpoint Ave (G26N northbound, G26S southbound)
-
-## Use Cases
-
-- Digital photo frames
-- Dashboard displays
-- E-ink displays
-- Information screens
-- Personal monitors

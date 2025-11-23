@@ -1,3 +1,6 @@
+# WARNING: VIBECODED WITH CLAUDE
+
+
 # Greenpoint Transit Tools
 
 Real-time NYC G Train and Ferry information tools for Greenpoint, Brooklyn.
