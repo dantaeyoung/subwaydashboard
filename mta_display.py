@@ -7,6 +7,7 @@ Creates an 800x600 PNG showing next trains at Greenpoint G station
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from nyct_gtfs import NYCTFeed
+import requests
 
 # Station IDs
 G_TRAIN_GREENPOINT_NORTH = "G26N"  # Queens-bound
@@ -15,7 +16,7 @@ G_TRAIN_GREENPOINT_SOUTH = "G26S"  # Church Ave-bound
 # Display settings
 WIDTH = 800
 HEIGHT = 600
-BG_COLOR = (106, 115, 122)  # Blue background
+BG_COLOR = (77, 77, 77)  # Blue background
 TEXT_COLOR = (255, 255, 255)  # White text
 LINE_COLOR = (131, 190, 82)  # G train green color
 SEPARATOR_COLOR = (30, 30, 30)  # Dark blue separator
@@ -67,6 +68,35 @@ def get_all_trains(limit=4):
     except Exception as e:
         print(f"Error fetching MTA data: {e}")
         return []
+
+
+def get_weather():
+    """Get current weather for Greenpoint, Brooklyn from National Weather Service"""
+    try:
+        # Greenpoint coordinates
+        url = "https://api.weather.gov/points/40.7313,-73.9542"
+        response = requests.get(url, headers={"User-Agent": "MTA Display App"}, timeout=5)
+        data = response.json()
+        forecast_url = data['properties']['forecast']
+
+        forecast = requests.get(forecast_url, headers={"User-Agent": "MTA Display App"}, timeout=5)
+        current = forecast.json()['properties']['periods'][0]
+
+        temp = current['temperature']
+        condition = current['shortForecast']
+
+        # Shorten common conditions
+        condition = condition.replace("Mostly", "M.").replace("Partly", "P.")
+        condition = condition.replace("Cloudy", "Cloudy").replace("Sunny", "Sunny")
+
+        # Limit length to prevent cutoff
+        if len(condition) > 15:
+            condition = condition[:15]
+
+        return f"{temp}°F {condition}"
+    except Exception as e:
+        print(f"Error fetching weather: {e}")
+        return ""
 
 
 def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font, font_index=0):
@@ -151,7 +181,7 @@ def create_display_image(output_path="schedule.png"):
         # Draw arrival time - center-aligned at a fixed x position
         time_text = str(minutes) if minutes > 0 else "Now"
         # Fixed x position for center of time numbers (about 100px from right edge)
-        time_center_x = SCALED_WIDTH - 55 * SCALE
+        time_center_x = SCALED_WIDTH - 62 * SCALE
 
         if minutes > 0:
             draw.text((time_center_x, y_pos + 24 * SCALE), time_text, fill=TEXT_COLOR, font=time_font, anchor='mm')
@@ -178,6 +208,14 @@ def create_display_image(output_path="schedule.png"):
     # Add current time in bottom left corner
     current_time = datetime.now().strftime("%I:%M %p")
     draw.text((20 * SCALE, SCALED_HEIGHT - footer_height_scaled + 10 * SCALE), current_time, fill=HEADER_TEXT, font=small_font)
+
+    # Add weather in bottom right corner
+    weather = get_weather()
+    if weather:
+        weather_bbox = draw.textbbox((0, 0), weather, font=small_font)
+        weather_width = weather_bbox[2] - weather_bbox[0]
+        draw.text((SCALED_WIDTH - weather_width - 20 * SCALE, SCALED_HEIGHT - footer_height_scaled + 10 * SCALE),
+                 weather, fill=HEADER_TEXT, font=small_font)
 
     # Scale image down to target size for antialiasing
     img = img.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
