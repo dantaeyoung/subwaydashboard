@@ -3,6 +3,10 @@ ferry-gtfs.zip
 *.pyc
 __pycache__/
 
+# Generated output
+schedule.png
+*.png
+
 # macOS
 .DS_Store
 
@@ -10,3 +14,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Development files
+dev/*.zip
+dev/*.gtfs
