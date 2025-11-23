@@ -90,17 +90,15 @@ ferryschedule/
 ├── mta-display/           # PNG display generator
 │   ├── mta_display.py
 │   └── README.md
+├── dev/                   # Development & debugging scripts
+│   ├── README.md
+│   ├── debug_transit.py
+│   ├── debug_ferry.py
+│   ├── analyze_ferry.py
+│   └── (more scripts...)
 ├── requirements.txt       # Python dependencies
 └── README.md             # This file
 ```
-
-## Development Scripts
-
-Additional development and debugging scripts are available in the root directory:
-- `debug_transit.py` - Debug G train data
-- `debug_ferry.py` - Debug ferry data
-- `analyze_ferry.py` - Analyze ferry patterns
-- And more...
 
 ## Data Sources
 
