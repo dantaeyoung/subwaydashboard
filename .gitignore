@@ -19,6 +19,3 @@ build/
 # Development files
 dev/*.zip
 dev/*.gtfs
-
-# Font files (proprietary - not distributed)
-mta-display/Helvetica.ttc
