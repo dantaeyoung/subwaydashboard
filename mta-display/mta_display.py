@@ -106,13 +106,14 @@ def get_font_paths():
     """Get cross-platform font paths - prioritizes local Helvetica.ttc"""
     # First, check for local Helvetica.ttc in the same directory as this script
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_helvetica = os.path.join(script_dir, "Helvetica.ttc")
+    local_helvetica = os.path.join(script_dir, "Helvetica.ttf")
+    local_helvetica_bold = os.path.join(script_dir, "Helvetica-Bold.ttf")
 
-    if os.path.exists(local_helvetica):
+    if os.path.exists(local_helvetica) and os.path.exists(local_helvetica_bold):
         # Use the local bundled Helvetica font
         return {
             'regular': local_helvetica,
-            'bold': local_helvetica  # Same file, use index parameter to select bold
+            'bold': local_helvetica_bold,
         }
 
     # Fall back to system fonts
