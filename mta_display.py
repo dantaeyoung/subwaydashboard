@@ -148,20 +148,19 @@ def create_display_image(output_path="schedule.png"):
         # Draw destination
         draw.text((140 * SCALE, y_pos + 18), destination, fill=TEXT_COLOR, font=dest_font)
 
-        # Draw arrival time
+        # Draw arrival time - center-aligned at a fixed x position
         time_text = str(minutes) if minutes > 0 else "Now"
-        time_bbox = draw.textbbox((0, 0), time_text, font=time_font)
-        time_width = time_bbox[2] - time_bbox[0]
-        if minutes > 0:
-            draw.text((SCALED_WIDTH - time_width - 40 * SCALE, y_pos - 10), time_text, fill=TEXT_COLOR, font=time_font)
-        else:
-            draw.text((SCALED_WIDTH - time_width - 40 * SCALE, y_pos + 5), time_text, fill=TEXT_COLOR, font=time_font)
+        # Fixed x position for center of time numbers (about 100px from right edge)
+        time_center_x = SCALED_WIDTH - 55 * SCALE
 
-        # Draw "min" label if not "Now" - align with proper right margin
         if minutes > 0:
-            min_bbox = draw.textbbox((0, 0), "MIN", font=small_font)
-            min_width = min_bbox[2] - min_bbox[0]
-            draw.text((SCALED_WIDTH - min_width - 40 * SCALE, y_pos + 50 * SCALE), "MIN", fill=TEXT_COLOR, font=small_font)
+            draw.text((time_center_x, y_pos + 24 * SCALE), time_text, fill=TEXT_COLOR, font=time_font, anchor='mm')
+        else:
+            draw.text((SCALED_WIDTH - 85 * SCALE, y_pos + 32 * SCALE), time_text, fill=TEXT_COLOR, font=time_font, anchor='mm')
+
+        # Draw "min" label if not "Now" - center-aligned below the number
+        if minutes > 0:
+            draw.text((time_center_x, y_pos + 64 * SCALE), "MIN", fill=TEXT_COLOR, font=small_font, anchor='mm')
 
         y_pos += line_height
 
