@@ -25,7 +25,7 @@ Shows G train and NYC Ferry arrivals in your menu bar using SwiftBar.
 
 **PNG image generator for digital displays**
 
-![MTA Display Example](mta-display/schedule_example.png)
+![MTA Display Example](mta-display/schedule.png)
 
 Creates an 800x600 image showing G train arrivals and weather.
 
