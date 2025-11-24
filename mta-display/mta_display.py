@@ -108,7 +108,31 @@ def get_weather():
         if len(condition) > 15:
             condition = condition[:15]
 
-        return f"{temp}°F {condition}"
+        # Get sunrise/sunset times
+        sun_url = "https://api.sunrise-sunset.org/json?lat=40.7313&lng=-73.9542&formatted=0"
+        sun_response = requests.get(sun_url, timeout=5)
+        sun_data = sun_response.json()['results']
+
+        # Parse times and convert to local time
+        from dateutil import parser
+        import pytz
+
+        sunrise_utc = parser.parse(sun_data['sunrise'])
+        sunset_utc = parser.parse(sun_data['sunset'])
+
+        # Convert to Eastern Time
+        eastern = pytz.timezone('America/New_York')
+        sunrise_local = sunrise_utc.astimezone(eastern)
+        sunset_local = sunset_utc.astimezone(eastern)
+        now_local = datetime.now(eastern)
+
+        # Determine which to show
+        if now_local < sunset_local:
+            sun_time = f"Sunset: {sunset_local.strftime('%I:%M %p').lstrip('0')}"
+        else:
+            sun_time = f"Sunrise: {sunrise_local.strftime('%I:%M %p').lstrip('0')}"
+
+        return f"{temp}°F {condition} • {sun_time}"
     except Exception as e:
         print(f"Error fetching weather: {e}")
         return ""

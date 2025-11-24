@@ -32,6 +32,7 @@ Creates an 800x600 image showing G train arrivals and weather.
 **Features:**
 - 4 G train arrivals with real-time data
 - Current weather from National Weather Service
+- Sunrise/sunset times (shows upcoming time)
 - MTA-style design with antialiased graphics
 - Landscape or portrait orientation
 
@@ -61,11 +62,11 @@ pip3 install -r requirements.txt
 
 ```bash
 cd mta-display
-python3 mta_display.py
+uv run mta_display.py
 # Creates schedule.png
 
 # For portrait mode:
-python3 mta_display.py --rotate
+uv run mta_display.py --rotate
 ```
 
 ## Requirements

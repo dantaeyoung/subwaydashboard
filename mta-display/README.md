@@ -25,6 +25,8 @@ Required dependencies:
 - `Pillow` - Image generation
 - `nyct-gtfs` - Real-time G train data
 - `requests` - Weather API calls
+- `python-dateutil` - Date parsing for sunrise/sunset
+- `pytz` - Timezone handling
 
 ### Font Requirements
 
@@ -52,7 +54,7 @@ sudo apt-get install fonts-dejavu fonts-liberation
 Generate a landscape display (800x600):
 
 ```bash
-python3 mta_display.py
+uv run mta_display.py
 ```
 
 ### Portrait Mode
@@ -60,9 +62,9 @@ python3 mta_display.py
 Rotate 90° counter-clockwise for portrait display (600x800):
 
 ```bash
-python3 mta_display.py --rotate
+uv run mta_display.py --rotate
 # or
-python3 mta_display.py -r
+uv run mta_display.py -r
 ```
 
 ## Output
