@@ -109,28 +109,39 @@ def get_weather():
             condition = condition[:15]
 
         # Get sunrise/sunset times
+        from dateutil import parser
+        import pytz
+        from datetime import timedelta
+
+        eastern = pytz.timezone('America/New_York')
+        now_local = datetime.now(eastern)
+
+        # Get today's sunrise/sunset
         sun_url = "https://api.sunrise-sunset.org/json?lat=40.7313&lng=-73.9542&formatted=0"
         sun_response = requests.get(sun_url, timeout=5)
         sun_data = sun_response.json()['results']
 
-        # Parse times and convert to local time
-        from dateutil import parser
-        import pytz
-
         sunrise_utc = parser.parse(sun_data['sunrise'])
         sunset_utc = parser.parse(sun_data['sunset'])
-
-        # Convert to Eastern Time
-        eastern = pytz.timezone('America/New_York')
         sunrise_local = sunrise_utc.astimezone(eastern)
         sunset_local = sunset_utc.astimezone(eastern)
-        now_local = datetime.now(eastern)
 
-        # Determine which to show
-        if now_local < sunset_local:
+        # Determine which upcoming event to show
+        if now_local < sunrise_local:
+            # Before sunrise - show today's sunrise
+            sun_time = f"Sunrise: {sunrise_local.strftime('%I:%M %p').lstrip('0')}"
+        elif now_local < sunset_local:
+            # After sunrise but before sunset - show today's sunset
             sun_time = f"Sunset: {sunset_local.strftime('%I:%M %p').lstrip('0')}"
         else:
-            sun_time = f"Sunrise: {sunrise_local.strftime('%I:%M %p').lstrip('0')}"
+            # After sunset - show tomorrow's sunrise
+            tomorrow = now_local.date() + timedelta(days=1)
+            sun_url_tomorrow = f"https://api.sunrise-sunset.org/json?lat=40.7313&lng=-73.9542&formatted=0&date={tomorrow}"
+            sun_response_tomorrow = requests.get(sun_url_tomorrow, timeout=5)
+            sun_data_tomorrow = sun_response_tomorrow.json()['results']
+            sunrise_utc_tomorrow = parser.parse(sun_data_tomorrow['sunrise'])
+            sunrise_local_tomorrow = sunrise_utc_tomorrow.astimezone(eastern)
+            sun_time = f"Sunrise: {sunrise_local_tomorrow.strftime('%I:%M %p').lstrip('0')}"
 
         return f"{temp}°F {condition} • {sun_time}"
     except Exception as e:
