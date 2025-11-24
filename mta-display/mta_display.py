@@ -157,7 +157,38 @@ def get_weather():
         forecast_url = data['properties']['forecast']
 
         forecast = requests.get(forecast_url, headers={"User-Agent": "MTA Display App"}, timeout=5)
-        current = forecast.json()['properties']['periods'][0]
+        periods = forecast.json()['properties']['periods']
+
+        # Get sunrise/sunset times first to determine if it's day or night
+        from dateutil import parser
+        import pytz
+        from datetime import timedelta
+
+        eastern = pytz.timezone('America/New_York')
+        now_local = datetime.now(eastern)
+
+        sun_url = "https://api.sunrise-sunset.org/json?lat=40.7313&lng=-73.9542&formatted=0"
+        sun_response = requests.get(sun_url, timeout=5)
+        sun_data = sun_response.json()['results']
+
+        sunrise_utc = parser.parse(sun_data['sunrise'])
+        sunset_utc = parser.parse(sun_data['sunset'])
+        sunrise_local = sunrise_utc.astimezone(eastern)
+        sunset_local = sunset_utc.astimezone(eastern)
+
+        # Determine if it's currently daytime or nighttime
+        is_daytime = sunrise_local <= now_local < sunset_local
+
+        # Find the first period matching current day/night status
+        current = None
+        for period in periods:
+            if period['isDaytime'] == is_daytime:
+                current = period
+                break
+
+        # Fallback to first period if no match found
+        if current is None:
+            current = periods[0]
 
         temp = current['temperature']
         condition = current['shortForecast']
@@ -173,25 +204,7 @@ def get_weather():
         if len(condition_short) > 15:
             condition_short = condition_short[:15]
 
-        # Get sunrise/sunset times
-        from dateutil import parser
-        import pytz
-        from datetime import timedelta
-
-        eastern = pytz.timezone('America/New_York')
-        now_local = datetime.now(eastern)
-
-        # Get today's sunrise/sunset
-        sun_url = "https://api.sunrise-sunset.org/json?lat=40.7313&lng=-73.9542&formatted=0"
-        sun_response = requests.get(sun_url, timeout=5)
-        sun_data = sun_response.json()['results']
-
-        sunrise_utc = parser.parse(sun_data['sunrise'])
-        sunset_utc = parser.parse(sun_data['sunset'])
-        sunrise_local = sunrise_utc.astimezone(eastern)
-        sunset_local = sunset_utc.astimezone(eastern)
-
-        # Determine which upcoming event to show
+        # Determine which upcoming sun event to show (sunrise/sunset data already fetched above)
         if now_local < sunrise_local:
             # Before sunrise - show today's sunrise
             sun_time = sunrise_local.strftime('%I:%M %p').lstrip('0')
