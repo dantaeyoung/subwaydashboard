@@ -31,6 +31,11 @@ HEADER_TEXT = (255, 255, 255)  # White header text
 WEATHER_LINE = (145, 145, 145)  # Weather graph line color
 TIME_BAR_BG = (25, 25, 25)  # Slightly lighter background for time bar at bottom
 
+# Sunrise gradient settings
+SUNRISE_GRADIENT_NIGHT_COLOR = (80, 80, 80)  # Dark gray for night
+SUNRISE_GRADIENT_DAY_COLOR = (170, 170, 170)  # Light gray for day
+SUNRISE_GRADIENT_WIDTH_HOURS = 0.8  # Total width of gradient in hours (centered on sunrise)
+
 def get_weather_icon(condition_text, is_sunrise=False, is_sunset=False):
     """Map weather condition text to icon filename using fuzzy matching"""
     condition_lower = condition_text.lower()
@@ -558,6 +563,84 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
             graph_top = SCALED_HEIGHT - footer_height_scaled + 20 * SCALE
             graph_bottom = SCALED_HEIGHT - 165 * SCALE
             graph_height = graph_bottom - graph_top
+
+            # Draw gradient background for sunrise transition
+            graph_area_top = SCALED_HEIGHT - footer_height_scaled
+            graph_area_bottom = SCALED_HEIGHT - time_bar_height
+
+            for x in range(SCALED_WIDTH):
+                # Determine what time this x position represents
+                if x < left_margin or x > right_margin:
+                    continue
+
+                # Find which two hour labels this x position is between
+                # Hour labels are at: left_margin + i * hour_spacing + hour_spacing // 2
+
+                # Find the closest hour labels on either side
+                closest_hour_before = -1
+                closest_hour_after = -1
+
+                for i in range(len(hourly_forecast)):
+                    label_x = left_margin + i * hour_spacing + hour_spacing // 2
+                    if label_x <= x:
+                        closest_hour_before = i
+                    if label_x > x and closest_hour_after == -1:
+                        closest_hour_after = i
+                        break
+
+                # If we're before the first label or after the last, skip
+                if closest_hour_before == -1 or closest_hour_after == -1:
+                    continue
+
+                hour_data = hourly_forecast[closest_hour_before]
+                hour_time = hour_data.get('hour_time')
+
+                if hour_time and sunrise_local and closest_hour_after < len(hourly_forecast):
+                    next_hour_time = hourly_forecast[closest_hour_after].get('hour_time')
+
+                    if next_hour_time:
+                        # Calculate progress between the two label positions
+                        label_before_x = left_margin + closest_hour_before * hour_spacing + hour_spacing // 2
+                        label_after_x = left_margin + closest_hour_after * hour_spacing + hour_spacing // 2
+
+                        progress = (x - label_before_x) / (label_after_x - label_before_x)
+
+                        # Interpolate the time
+                        time_diff = (next_hour_time - hour_time).total_seconds()
+                        current_time_estimate = hour_time.timestamp() + (time_diff * progress)
+                    else:
+                        current_time_estimate = hour_time.timestamp()
+                else:
+                    continue
+
+                sunrise_timestamp = sunrise_local.timestamp()
+
+                # Calculate gradient based on distance from sunrise
+                # Dark before sunrise, light after sunrise, with smooth transition
+                time_diff_from_sunrise = (current_time_estimate - sunrise_timestamp) / 3600  # hours
+
+                # Gradient over specified width centered on sunrise
+                gradient_half_width = SUNRISE_GRADIENT_WIDTH_HOURS / 2
+
+                if time_diff_from_sunrise < -gradient_half_width:
+                    # Dark (night)
+                    color = SUNRISE_GRADIENT_NIGHT_COLOR
+                elif time_diff_from_sunrise > gradient_half_width:
+                    # Light (day)
+                    color = SUNRISE_GRADIENT_DAY_COLOR
+                else:
+                    # Gradient transition
+                    # Map -half_width to +half_width range to 0 to 1
+                    gradient_pos = (time_diff_from_sunrise + gradient_half_width) / SUNRISE_GRADIENT_WIDTH_HOURS
+
+                    # Smooth interpolation between night and day colors
+                    r = int(SUNRISE_GRADIENT_NIGHT_COLOR[0] + (SUNRISE_GRADIENT_DAY_COLOR[0] - SUNRISE_GRADIENT_NIGHT_COLOR[0]) * gradient_pos)
+                    g = int(SUNRISE_GRADIENT_NIGHT_COLOR[1] + (SUNRISE_GRADIENT_DAY_COLOR[1] - SUNRISE_GRADIENT_NIGHT_COLOR[1]) * gradient_pos)
+                    b = int(SUNRISE_GRADIENT_NIGHT_COLOR[2] + (SUNRISE_GRADIENT_DAY_COLOR[2] - SUNRISE_GRADIENT_NIGHT_COLOR[2]) * gradient_pos)
+                    color = (r, g, b)
+
+                # Draw vertical line for this x position
+                draw.line([(x, graph_area_top), (x, graph_area_bottom)], fill=color, width=1)
 
             # Draw each hour
             for i, hour_data in enumerate(hourly_forecast):
