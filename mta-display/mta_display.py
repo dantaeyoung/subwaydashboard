@@ -11,8 +11,6 @@ import requests
 import sys
 import os
 import platform
-import cairosvg
-from io import BytesIO
 
 # Station IDs
 G_TRAIN_GREENPOINT_NORTH = "G26N"  # Queens-bound
@@ -77,41 +75,20 @@ def get_weather_icon(condition_text, is_sunrise=False, is_sunset=False):
         return 'partly-cloudy'
 
 
-def render_svg_icon(svg_path, size, invert_colors=False):
-    """Render an SVG file to a PIL Image at the specified size
+def load_png_icon(png_path, size):
+    """Load a PNG icon and resize it to the specified size
 
     Args:
-        svg_path: Path to the SVG file
+        png_path: Path to the PNG file
         size: Target size in pixels
-        invert_colors: If True, convert black to white for dark backgrounds
     """
     try:
-        # Read SVG file
-        with open(svg_path, 'r') as f:
-            svg_content = f.read()
-
-        # If inverting colors, replace black fills with white
-        if invert_colors:
-            # Replace currentColor (which defaults to black) with white
-            svg_content = svg_content.replace('fill="currentColor"', 'fill="#FFFFFF"')
-            svg_content = svg_content.replace('stroke="currentColor"', 'stroke="#FFFFFF"')
-            # Also replace common black color specifications with white
-            svg_content = svg_content.replace('fill="#000000"', 'fill="#FFFFFF"')
-            svg_content = svg_content.replace('fill="#000"', 'fill="#FFF"')
-            svg_content = svg_content.replace('fill="black"', 'fill="white"')
-            svg_content = svg_content.replace('fill="rgb(0,0,0)"', 'fill="rgb(255,255,255)"')
-            # Also handle stroke colors
-            svg_content = svg_content.replace('stroke="#000000"', 'stroke="#FFFFFF"')
-            svg_content = svg_content.replace('stroke="#000"', 'stroke="#FFF"')
-            svg_content = svg_content.replace('stroke="black"', 'stroke="white"')
-
-        # Convert SVG to PNG in memory
-        png_data = cairosvg.svg2png(bytestring=svg_content.encode('utf-8'),
-                                    output_width=size, output_height=size)
-        # Load PNG into PIL Image
-        return Image.open(BytesIO(png_data))
+        # Load PNG and resize
+        icon = Image.open(png_path)
+        icon = icon.resize((size, size), Image.Resampling.LANCZOS)
+        return icon
     except Exception as e:
-        print(f"Error rendering SVG {svg_path}: {e}")
+        print(f"Error loading PNG {png_path}: {e}")
         # Return a blank image as fallback
         return Image.new('RGBA', (size, size), (0, 0, 0, 0))
 
@@ -453,13 +430,13 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
         # Render weather icons at 2x scale
         icon_size = 30 * SCALE  # Icon size in scaled pixels
 
-        # Load and render main weather icon (inverted for dark background)
-        main_icon_path = os.path.join(icon_dir, f"{main_icon}.svg")
-        main_icon_img = render_svg_icon(main_icon_path, icon_size, invert_colors=True)
+        # Load main weather icon (pre-converted to white PNG)
+        main_icon_path = os.path.join(icon_dir, f"{main_icon}.png")
+        main_icon_img = load_png_icon(main_icon_path, icon_size)
 
-        # Load and render sun icon (inverted for dark background)
-        sun_icon_path = os.path.join(icon_dir, f"{sun_icon}.svg")
-        sun_icon_img = render_svg_icon(sun_icon_path, icon_size, invert_colors=True)
+        # Load sun icon (pre-converted to white PNG)
+        sun_icon_path = os.path.join(icon_dir, f"{sun_icon}.png")
+        sun_icon_img = load_png_icon(sun_icon_path, icon_size)
 
         # Calculate positions from right edge
         margin = 20 * SCALE

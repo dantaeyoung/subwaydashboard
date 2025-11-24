@@ -78,7 +78,6 @@ uv run mta_display.py --rotate
 - `requests` - Weather API calls (for display generator)
 - `python-dateutil` - Date parsing for sunrise/sunset
 - `pytz` - Timezone handling
-- `cairosvg` - SVG icon rendering
 
 Install all with uv:
 ```bash
