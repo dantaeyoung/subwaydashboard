@@ -23,17 +23,17 @@ HEIGHT = 600
 
 #"""
 BG_COLOR = (255, 255, 255)  #  background
-TEXT_COLOR = (0, 0, 0)  # White text
+TEXT_COLOR = (0, 0, 0)  
 LINE_COLOR = (131, 190, 82)  # G train green color
 SEPARATOR_COLOR = (230, 230, 230)  # Dark blue separator
-HEADER_BG = (70, 70, 70)  # Dark gray footer background
+HEADER_BG = (40, 40, 40)  # Dark gray footer background
 HEADER_TEXT = (255, 255, 255)  # White header text
 WEATHER_LINE = (245, 245, 245)  # Weather graph line color
-TIME_BAR_BG = (25, 25, 25)  # Slightly lighter background for time bar at bottom
+TIME_BAR_BG = (0, 0, 0)  # Slightly lighter background for time bar at bottom
 
 # Sunrise/Sunset gradient settings
 SUNRISE_GRADIENT_NIGHT_COLOR = HEADER_BG
-SUNRISE_GRADIENT_DAY_COLOR = (140, 140, 140)  # Light gray for day
+SUNRISE_GRADIENT_DAY_COLOR = (115, 115, 115)  # Light gray for day
 SUNRISE_GRADIENT_WIDTH_HOURS = 0.8  # Total width of gradient in hours (centered on sunrise/sunset)
 SUNSET_GRADIENT_ENABLED = True  # Enable sunset gradient (transitions from day to night)
 SHOW_DEBUG_LINES = False  # Show orange/blue lines at sunrise/sunset times
