@@ -77,11 +77,37 @@ def get_weather_icon(condition_text, is_sunrise=False, is_sunset=False):
         return 'partly-cloudy'
 
 
-def render_svg_icon(svg_path, size):
-    """Render an SVG file to a PIL Image at the specified size"""
+def render_svg_icon(svg_path, size, invert_colors=False):
+    """Render an SVG file to a PIL Image at the specified size
+
+    Args:
+        svg_path: Path to the SVG file
+        size: Target size in pixels
+        invert_colors: If True, convert black to white for dark backgrounds
+    """
     try:
+        # Read SVG file
+        with open(svg_path, 'r') as f:
+            svg_content = f.read()
+
+        # If inverting colors, replace black fills with white
+        if invert_colors:
+            # Replace currentColor (which defaults to black) with white
+            svg_content = svg_content.replace('fill="currentColor"', 'fill="#FFFFFF"')
+            svg_content = svg_content.replace('stroke="currentColor"', 'stroke="#FFFFFF"')
+            # Also replace common black color specifications with white
+            svg_content = svg_content.replace('fill="#000000"', 'fill="#FFFFFF"')
+            svg_content = svg_content.replace('fill="#000"', 'fill="#FFF"')
+            svg_content = svg_content.replace('fill="black"', 'fill="white"')
+            svg_content = svg_content.replace('fill="rgb(0,0,0)"', 'fill="rgb(255,255,255)"')
+            # Also handle stroke colors
+            svg_content = svg_content.replace('stroke="#000000"', 'stroke="#FFFFFF"')
+            svg_content = svg_content.replace('stroke="#000"', 'stroke="#FFF"')
+            svg_content = svg_content.replace('stroke="black"', 'stroke="white"')
+
         # Convert SVG to PNG in memory
-        png_data = cairosvg.svg2png(url=svg_path, output_width=size, output_height=size)
+        png_data = cairosvg.svg2png(bytestring=svg_content.encode('utf-8'),
+                                    output_width=size, output_height=size)
         # Load PNG into PIL Image
         return Image.open(BytesIO(png_data))
     except Exception as e:
@@ -427,13 +453,13 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
         # Render weather icons at 2x scale
         icon_size = 30 * SCALE  # Icon size in scaled pixels
 
-        # Load and render main weather icon
+        # Load and render main weather icon (inverted for dark background)
         main_icon_path = os.path.join(icon_dir, f"{main_icon}.svg")
-        main_icon_img = render_svg_icon(main_icon_path, icon_size)
+        main_icon_img = render_svg_icon(main_icon_path, icon_size, invert_colors=True)
 
-        # Load and render sun icon
+        # Load and render sun icon (inverted for dark background)
         sun_icon_path = os.path.join(icon_dir, f"{sun_icon}.svg")
-        sun_icon_img = render_svg_icon(sun_icon_path, icon_size)
+        sun_icon_img = render_svg_icon(sun_icon_path, icon_size, invert_colors=True)
 
         # Calculate positions from right edge
         margin = 20 * SCALE
