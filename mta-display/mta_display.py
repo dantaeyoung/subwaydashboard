@@ -348,7 +348,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE, index=1)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE, index=1)
             time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE, index=1)
-            small_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE, index=1)
+            small_font = ImageFont.truetype(font_paths['bold'], 32 * SCALE, index=1)
         else:
             # Linux or separate font files (.ttf) - no index parameter
             # Note: On Linux with .ttc, we load it without index (may not get true bold)
@@ -358,7 +358,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
             line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE)
             dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE)
             time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE)
-            small_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE)
+            small_font = ImageFont.truetype(font_paths['bold'], 27 * SCALE)
         print(f"Fonts loaded successfully!")
         print(f"Line font size: {line_font.size}")
     except Exception as e:
@@ -377,7 +377,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
     all_trains = get_all_trains(limit=4)
 
     # Calculate even spacing for trains
-    footer_height = 40
+    footer_height = 60
     available_height = HEIGHT - footer_height
     num_trains = len(all_trains)
     line_height = (available_height // num_trains) * SCALE
@@ -424,12 +424,12 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
                      fill=SEPARATOR_COLOR, width=8 * SCALE)
 
     # Draw thin footer at bottom with time in bottom left
-    footer_height_scaled = 40 * SCALE
+    footer_height_scaled = footer_height * SCALE
     draw.rectangle([0, SCALED_HEIGHT - footer_height_scaled, SCALED_WIDTH, SCALED_HEIGHT], fill=HEADER_BG)
 
     # Add current time in bottom left corner
     current_time = datetime.now().strftime("%I:%M %p")
-    draw.text((20 * SCALE, SCALED_HEIGHT - footer_height_scaled + 10 * SCALE), current_time, fill=HEADER_TEXT, font=small_font)
+    draw.text((20 * SCALE, SCALED_HEIGHT - footer_height_scaled + 15 * SCALE), current_time, fill=HEADER_TEXT, font=small_font)
 
     # Add weather in bottom right corner with icons
     weather_data = get_weather()
@@ -470,12 +470,12 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
         start_x = SCALED_WIDTH - total_width - margin
 
         # Draw main weather icon
-        y_icon = SCALED_HEIGHT - footer_height_scaled + (footer_height_scaled - icon_size) // 2
+        y_icon = SCALED_HEIGHT - footer_height_scaled + (footer_height_scaled - icon_size) // 2 - 3 
         img.paste(main_icon_img, (start_x, y_icon), main_icon_img)
 
         # Draw weather text
         text_x = start_x + icon_size + icon_spacing
-        text_y = SCALED_HEIGHT - footer_height_scaled + 10 * SCALE
+        text_y = SCALED_HEIGHT - footer_height_scaled + 15 * SCALE
         draw.text((text_x, text_y), weather_text, fill=HEADER_TEXT, font=small_font)
 
         # Draw sun icon
