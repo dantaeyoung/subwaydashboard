@@ -28,7 +28,7 @@ LINE_COLOR = (131, 190, 82)  # G train green color
 SEPARATOR_COLOR = (230, 230, 230)  # Dark blue separator
 HEADER_BG = (80, 80, 80)  # Dark gray footer background
 HEADER_TEXT = (255, 255, 255)  # White header text
-WEATHER_LINE = (105, 105, 105)  # Weather graph line color
+WEATHER_LINE = (145, 145, 145)  # Weather graph line color
 TIME_BAR_BG = (25, 25, 25)  # Slightly lighter background for time bar at bottom
 
 def get_weather_icon(condition_text, is_sunrise=False, is_sunset=False):
@@ -528,10 +528,10 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
             try:
                 if use_font_index:
                     hourly_time_font = ImageFont.truetype(font_paths['regular'], 18 * SCALE, index=0)
-                    hourly_temp_font = ImageFont.truetype(font_paths['regular'], 24 * SCALE, index=0)
+                    hourly_temp_font = ImageFont.truetype(font_paths['bold'], 24 * SCALE, index=0)
                 else:
                     hourly_time_font = ImageFont.truetype(font_paths['regular'], 18 * SCALE)
-                    hourly_temp_font = ImageFont.truetype(font_paths['regular'], 22 * SCALE)
+                    hourly_temp_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE)
             except:
                 hourly_time_font = small_font
                 hourly_temp_font = header_font
