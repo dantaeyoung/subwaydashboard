@@ -33,9 +33,10 @@ TIME_BAR_BG = (25, 25, 25)  # Slightly lighter background for time bar at bottom
 
 # Sunrise/Sunset gradient settings
 SUNRISE_GRADIENT_NIGHT_COLOR = HEADER_BG
-SUNRISE_GRADIENT_DAY_COLOR = (160, 160, 160)  # Light gray for day
+SUNRISE_GRADIENT_DAY_COLOR = (140, 140, 140)  # Light gray for day
 SUNRISE_GRADIENT_WIDTH_HOURS = 0.8  # Total width of gradient in hours (centered on sunrise/sunset)
 SUNSET_GRADIENT_ENABLED = True  # Enable sunset gradient (transitions from day to night)
+SHOW_DEBUG_LINES = False  # Show orange/blue lines at sunrise/sunset times
 
 def get_weather_icon(condition_text, is_sunrise=False, is_sunset=False):
     """Map weather condition text to icon filename using fuzzy matching"""
@@ -270,29 +271,22 @@ def get_weather():
 
 
 def get_font_paths():
-    """Get cross-platform font paths - prioritizes local Helvetica.ttc"""
-    # First, check for local Helvetica.ttc in the same directory as this script
+    """Get font paths - uses local TTF files from fonts directory"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_helvetica = os.path.join(script_dir, "Helvetica.ttf")
-    local_helvetica_bold = os.path.join(script_dir, "Helvetica-Bold.ttf")
+    fonts_dir = os.path.join(script_dir, "fonts")
+
+    local_helvetica = os.path.join(fonts_dir, "Helvetica.ttf")
+    local_helvetica_bold = os.path.join(fonts_dir, "Helvetica-Bold.ttf")
 
     if os.path.exists(local_helvetica) and os.path.exists(local_helvetica_bold):
-        # Use the local bundled Helvetica font
         return {
             'regular': local_helvetica,
             'bold': local_helvetica_bold,
         }
 
-    # Fall back to system fonts
+    # Fallback: try system fonts
     system = platform.system()
-
-    if system == "Darwin":  # macOS
-        return {
-            'regular': "/System/Library/Fonts/Helvetica.ttc",
-            'bold': "/System/Library/Fonts/Helvetica.ttc"
-        }
-    elif system == "Linux":
-        # Try common Linux font paths
+    if system == "Linux":
         linux_fonts = [
             ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
              "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
@@ -300,21 +294,16 @@ def get_font_paths():
              "/usr/share/fonts/liberation/LiberationSans-Bold.ttf"),
             ("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
              "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"),
-            ("/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-             "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"),
         ]
         for regular_font, bold_font in linux_fonts:
-            if os.path.exists(regular_font):
-                # Use bold if it exists, otherwise use regular for both
-                if not os.path.exists(bold_font):
-                    bold_font = regular_font
+            if os.path.exists(regular_font) and os.path.exists(bold_font):
                 return {'regular': regular_font, 'bold': bold_font}
 
     # Fallback - try to find any truetype font
     return {'regular': None, 'bold': None}
 
 
-def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font, font_index=0, use_font_index=True):
+def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, text_font):
     """Draw an antialiased circle with centered text"""
     # Create a high-resolution temporary image (4x scale for better antialiasing)
     scale = 4
@@ -327,12 +316,7 @@ def draw_antialiased_circle(img, center_x, center_y, radius, fill_color, text, t
 
     # Draw text at high resolution - scale up the font
     try:
-        if use_font_index:
-            # Use font index for .ttc files on macOS
-            scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale, index=font_index)
-        else:
-            # Don't use index - for .ttf files or .ttc on Linux
-            scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale)
+        scaled_font = ImageFont.truetype(text_font.path, text_font.size * scale)
     except Exception as e:
         # Last resort fallback - just use the original font
         print(f"Warning: Could not scale font for circle ({e}), using original size")
@@ -373,32 +357,15 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
     print(f"Platform: {platform.system()}")
     print(f"Font paths: {font_paths}")
 
-    # Determine if we can use font index - .ttc files work with index on macOS, but not always on Linux
-    is_ttc = font_paths['bold'] and font_paths['bold'].endswith('.ttc')
-    is_macos = platform.system() == "Darwin"
-    use_font_index = is_ttc and is_macos
-
+    # Load TTF fonts (no index parameter needed)
     try:
-        if use_font_index:
-            # macOS with .ttc - use index parameter for bold
-            print(f"Loading fonts with index parameter (macOS .ttc)")
-            header_font = ImageFont.truetype(font_paths['bold'], 36 * SCALE, index=1)
-            line_font = ImageFont.truetype(font_paths['bold'], 62 * SCALE, index=1)
-            dest_font = ImageFont.truetype(font_paths['bold'], 50 * SCALE, index=1)
-            time_font = ImageFont.truetype(font_paths['bold'], 60 * SCALE, index=1)
-            small_font = ImageFont.truetype(font_paths['bold'], 32 * SCALE, index=1)
-        else:
-            # Linux or separate font files (.ttf) - no index parameter
-            # Note: On Linux with .ttc, we load it without index (may not get true bold)
-            print(f"Loading fonts without index parameter (Linux or .ttf files)")
-            print(f"Bold font path: {font_paths['bold']}, size: {36 * SCALE}")
-            header_font = ImageFont.truetype(font_paths['bold'], 26 * SCALE)
-            line_font = ImageFont.truetype(font_paths['bold'], 48 * SCALE)
-            dest_font = ImageFont.truetype(font_paths['bold'], 48 * SCALE)
-            time_font = ImageFont.truetype(font_paths['bold'], 40 * SCALE)
-            small_font = ImageFont.truetype(font_paths['bold'], 23 * SCALE)
+        print(f"Loading TTF fonts from: {font_paths['bold']}")
+        header_font = ImageFont.truetype(font_paths['bold'], 26 * SCALE)
+        line_font = ImageFont.truetype(font_paths['bold'], 48 * SCALE)
+        dest_font = ImageFont.truetype(font_paths['bold'], 48 * SCALE)
+        time_font = ImageFont.truetype(font_paths['bold'], 40 * SCALE)
+        small_font = ImageFont.truetype(font_paths['bold'], 23 * SCALE)
         print(f"Fonts loaded successfully!")
-        print(f"Line font size: {line_font.size}")
     except Exception as e:
         # Fallback to default font if fonts are not available
         print(f"ERROR: Could not load fonts ({e})")
@@ -433,7 +400,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
         circle_y = y_pos + 30 * SCALE
         circle_radius = 32 * SCALE
         draw_antialiased_circle(img, circle_x, circle_y, circle_radius,
-                               LINE_COLOR, "G", line_font, font_index=1, use_font_index=use_font_index)
+                               LINE_COLOR, "G", line_font)
 
         # Draw destination
         draw.text((140 * SCALE, y_pos + 18), destination, fill=TEXT_COLOR, font=dest_font)
@@ -530,14 +497,10 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
 
         # Draw 8-hour forecast horizontally in the center of the footer
         if hourly_forecast:
-            # Create a smaller font for hourly forecast (use regular, not bold)
+            # Create fonts for hourly forecast (regular for time, bold for temp)
             try:
-                if use_font_index:
-                    hourly_time_font = ImageFont.truetype(font_paths['regular'], 18 * SCALE, index=0)
-                    hourly_temp_font = ImageFont.truetype(font_paths['bold'], 24 * SCALE, index=0)
-                else:
-                    hourly_time_font = ImageFont.truetype(font_paths['regular'], 18 * SCALE)
-                    hourly_temp_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE)
+                hourly_time_font = ImageFont.truetype(font_paths['regular'], 18 * SCALE)
+                hourly_temp_font = ImageFont.truetype(font_paths['bold'], 22 * SCALE)
             except:
                 hourly_time_font = small_font
                 hourly_temp_font = header_font
@@ -723,7 +686,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
                 draw.line([(x, graph_area_top), (x, graph_area_bottom)], fill=color, width=1)
 
             # DEBUG: Draw a thin orange line at the exact sunrise time
-            if sunrise_local and len(hourly_forecast) > 0:
+            if SHOW_DEBUG_LINES and sunrise_local and len(hourly_forecast) > 0:
                 first_hour = hourly_forecast[0].get('hour_time')
                 if first_hour:
                     # Calculate x position for sunrise
@@ -745,7 +708,7 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
                             break
 
             # DEBUG: Draw a thin blue line at the exact sunset time
-            if sunset_local and len(hourly_forecast) > 0:
+            if SHOW_DEBUG_LINES and sunset_local and len(hourly_forecast) > 0:
                 first_hour = hourly_forecast[0].get('hour_time')
                 if first_hour:
                     # Calculate x position for sunset
