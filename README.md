@@ -31,8 +31,8 @@ Creates an 800x600 image showing G train arrivals and weather.
 
 **Features:**
 - 4 G train arrivals with real-time data
-- Current weather from National Weather Service
-- Sunrise/sunset times (shows upcoming time)
+- Current weather from National Weather Service with icons
+- Sunrise/sunset times with icons (shows upcoming time)
 - MTA-style design with antialiased graphics
 - Landscape or portrait orientation
 

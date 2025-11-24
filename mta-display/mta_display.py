@@ -11,6 +11,8 @@ import requests
 import sys
 import os
 import platform
+import cairosvg
+from io import BytesIO
 
 # Station IDs
 G_TRAIN_GREENPOINT_NORTH = "G26N"  # Queens-bound
@@ -38,6 +40,55 @@ SEPARATOR_COLOR = (10, 10, 10)  # Dark blue separator
 HEADER_BG = (10, 10, 10)  # Dark gray footer background
 HEADER_TEXT = (255, 255, 255)  # White header text
 """
+
+def get_weather_icon(condition_text, is_sunrise=False, is_sunset=False):
+    """Map weather condition text to icon filename using fuzzy matching"""
+    condition_lower = condition_text.lower()
+
+    # Special handling for sunrise/sunset
+    if is_sunrise:
+        return 'sunrise'
+    if is_sunset:
+        return 'sunset'
+
+    # Icon mapping with fuzzy matching
+    if 'thunder' in condition_lower or 'storm' in condition_lower and 'tropical' not in condition_lower:
+        return 'thunderstorm'
+    elif 'snow' in condition_lower or 'flurr' in condition_lower or 'blizzard' in condition_lower:
+        return 'snow'
+    elif 'rain' in condition_lower and 'heavy' in condition_lower:
+        return 'heavy-rain'
+    elif 'rain' in condition_lower or 'shower' in condition_lower:
+        return 'rain'
+    elif 'drizzle' in condition_lower:
+        return 'drizzle'
+    elif 'fog' in condition_lower or 'mist' in condition_lower:
+        return 'fog'
+    elif 'clear' in condition_lower and 'night' in condition_lower:
+        return 'clear-night'
+    elif 'partly' in condition_lower or 'p.' in condition_lower:
+        return 'partly-cloudy'
+    elif 'mostly' in condition_lower or 'm.' in condition_lower or 'overcast' in condition_lower or 'cloudy' in condition_lower:
+        return 'cloudy'
+    elif 'sunny' in condition_lower or 'clear' in condition_lower:
+        return 'sunny'
+    else:
+        # Default to partly cloudy
+        return 'partly-cloudy'
+
+
+def render_svg_icon(svg_path, size):
+    """Render an SVG file to a PIL Image at the specified size"""
+    try:
+        # Convert SVG to PNG in memory
+        png_data = cairosvg.svg2png(url=svg_path, output_width=size, output_height=size)
+        # Load PNG into PIL Image
+        return Image.open(BytesIO(png_data))
+    except Exception as e:
+        print(f"Error rendering SVG {svg_path}: {e}")
+        # Return a blank image as fallback
+        return Image.new('RGBA', (size, size), (0, 0, 0, 0))
+
 
 def get_all_trains(limit=4):
     """Get next arrivals for both directions - Queens-bound first, then Church Ave-bound"""
@@ -86,7 +137,15 @@ def get_all_trains(limit=4):
 
 
 def get_weather():
-    """Get current weather for Greenpoint, Brooklyn from National Weather Service"""
+    """Get current weather for Greenpoint, Brooklyn from National Weather Service
+
+    Returns:
+        tuple: (weather_text, main_icon, sun_icon, sun_text) where:
+            - weather_text: formatted temperature and condition string
+            - main_icon: icon name for the main weather condition
+            - sun_icon: icon name for sunrise/sunset
+            - sun_text: formatted sunrise/sunset time text
+    """
     try:
         # Greenpoint coordinates
         url = "https://api.weather.gov/points/40.7313,-73.9542"
@@ -100,13 +159,16 @@ def get_weather():
         temp = current['temperature']
         condition = current['shortForecast']
 
+        # Get the weather icon before shortening text
+        main_icon = get_weather_icon(condition)
+
         # Shorten common conditions
-        condition = condition.replace("Mostly", "M.").replace("Partly", "P.")
-        condition = condition.replace("Cloudy", "Cloudy").replace("Sunny", "Sunny")
+        condition_short = condition.replace("Mostly", "M.").replace("Partly", "P.")
+        condition_short = condition_short.replace("Cloudy", "Cloudy").replace("Sunny", "Sunny")
 
         # Limit length to prevent cutoff
-        if len(condition) > 15:
-            condition = condition[:15]
+        if len(condition_short) > 15:
+            condition_short = condition_short[:15]
 
         # Get sunrise/sunset times
         from dateutil import parser
@@ -129,10 +191,12 @@ def get_weather():
         # Determine which upcoming event to show
         if now_local < sunrise_local:
             # Before sunrise - show today's sunrise
-            sun_time = f"Sunrise: {sunrise_local.strftime('%I:%M %p').lstrip('0')}"
+            sun_time = sunrise_local.strftime('%I:%M %p').lstrip('0')
+            sun_icon = 'sunrise'
         elif now_local < sunset_local:
             # After sunrise but before sunset - show today's sunset
-            sun_time = f"Sunset: {sunset_local.strftime('%I:%M %p').lstrip('0')}"
+            sun_time = sunset_local.strftime('%I:%M %p').lstrip('0')
+            sun_icon = 'sunset'
         else:
             # After sunset - show tomorrow's sunrise
             tomorrow = now_local.date() + timedelta(days=1)
@@ -141,12 +205,14 @@ def get_weather():
             sun_data_tomorrow = sun_response_tomorrow.json()['results']
             sunrise_utc_tomorrow = parser.parse(sun_data_tomorrow['sunrise'])
             sunrise_local_tomorrow = sunrise_utc_tomorrow.astimezone(eastern)
-            sun_time = f"Sunrise: {sunrise_local_tomorrow.strftime('%I:%M %p').lstrip('0')}"
+            sun_time = sunrise_local_tomorrow.strftime('%I:%M %p').lstrip('0')
+            sun_icon = 'sunrise'
 
-        return f"{temp}°F {condition} • {sun_time}"
+        weather_text = f"{temp}°F {condition_short}"
+        return (weather_text, main_icon, sun_icon, sun_time)
     except Exception as e:
         print(f"Error fetching weather: {e}")
-        return ""
+        return ("", "partly-cloudy", "sunrise", "")
 
 
 def get_font_paths():
@@ -349,13 +415,60 @@ def create_display_image(output_path="schedule.png", rotate=False, grayscale=Fal
     current_time = datetime.now().strftime("%I:%M %p")
     draw.text((20 * SCALE, SCALED_HEIGHT - footer_height_scaled + 10 * SCALE), current_time, fill=HEADER_TEXT, font=small_font)
 
-    # Add weather in bottom right corner
-    weather = get_weather()
-    if weather:
-        weather_bbox = draw.textbbox((0, 0), weather, font=small_font)
+    # Add weather in bottom right corner with icons
+    weather_data = get_weather()
+    if weather_data and weather_data[0]:  # Check if weather_text is not empty
+        weather_text, main_icon, sun_icon, sun_time = weather_data
+
+        # Get icon directory path
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_dir = os.path.join(script_dir, "icons")
+
+        # Render weather icons at 2x scale
+        icon_size = 30 * SCALE  # Icon size in scaled pixels
+
+        # Load and render main weather icon
+        main_icon_path = os.path.join(icon_dir, f"{main_icon}.svg")
+        main_icon_img = render_svg_icon(main_icon_path, icon_size)
+
+        # Load and render sun icon
+        sun_icon_path = os.path.join(icon_dir, f"{sun_icon}.svg")
+        sun_icon_img = render_svg_icon(sun_icon_path, icon_size)
+
+        # Calculate positions from right edge
+        margin = 20 * SCALE
+        icon_spacing = 8 * SCALE
+
+        # Measure text widths
+        weather_bbox = draw.textbbox((0, 0), weather_text, font=small_font)
         weather_width = weather_bbox[2] - weather_bbox[0]
-        draw.text((SCALED_WIDTH - weather_width - 20 * SCALE, SCALED_HEIGHT - footer_height_scaled + 10 * SCALE),
-                 weather, fill=HEADER_TEXT, font=small_font)
+
+        sun_time_bbox = draw.textbbox((0, 0), sun_time, font=small_font)
+        sun_time_width = sun_time_bbox[2] - sun_time_bbox[0]
+
+        # Layout from right to left: sun_time + sun_icon + spacing + weather_text + main_icon
+        total_width = (sun_time_width + icon_spacing + icon_size +
+                      icon_spacing * 2 + weather_width + icon_spacing + icon_size)
+
+        # Starting x position
+        start_x = SCALED_WIDTH - total_width - margin
+
+        # Draw main weather icon
+        y_icon = SCALED_HEIGHT - footer_height_scaled + (footer_height_scaled - icon_size) // 2
+        img.paste(main_icon_img, (start_x, y_icon), main_icon_img)
+
+        # Draw weather text
+        text_x = start_x + icon_size + icon_spacing
+        text_y = SCALED_HEIGHT - footer_height_scaled + 10 * SCALE
+        draw.text((text_x, text_y), weather_text, fill=HEADER_TEXT, font=small_font)
+
+        # Draw sun icon
+        sun_icon_x = text_x + weather_width + icon_spacing * 2
+        img.paste(sun_icon_img, (sun_icon_x, y_icon), sun_icon_img)
+
+        # Draw sun time
+        sun_time_x = sun_icon_x + icon_size + icon_spacing
+        draw.text((sun_time_x, text_y), sun_time, fill=HEADER_TEXT, font=small_font)
 
     # Scale image down to target size for antialiasing
     img = img.resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)

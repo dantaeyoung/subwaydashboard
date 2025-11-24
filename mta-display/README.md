@@ -27,6 +27,7 @@ Required dependencies:
 - `requests` - Weather API calls
 - `python-dateutil` - Date parsing for sunrise/sunset
 - `pytz` - Timezone handling
+- `cairosvg` - SVG icon rendering
 
 ### Font Requirements
 
