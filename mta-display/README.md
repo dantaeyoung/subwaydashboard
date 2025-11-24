@@ -6,7 +6,7 @@ Creates an 800x600 PNG image showing real-time subway train arrivals with curren
 
 (Station is hardcoded)
 
-![MTA Display Example](schedule_example.png)
+![MTA Display Example](schedule.png)
 
 ## Installation
 
@@ -25,22 +25,12 @@ Required dependencies:
 
 ### Font Requirements
 
-**For best results (recommended):** Place a copy of `Helvetica.ttc` in the `mta-display/` folder. The script will automatically use it for true MTA-style rendering.
+The project includes Helvetica TTF fonts in the `fonts/` directory for true MTA-style rendering.
 
-**Font rendering by platform:**
-- **macOS with Helvetica.ttc**: Full support including bold variants
-- **Linux with Helvetica.ttc**: Helvetica is used but may not render bold properly (Pillow limitation with .ttc files on Linux)
-- **Linux without Helvetica.ttc**: Uses system fonts (DejaVu Sans, Liberation Sans, or FreeSans)
-
-**On Linux** (if not using Helvetica.ttc), install system fonts:
+**On Linux** (if fonts are missing), you can install fallback system fonts:
 ```bash
 sudo apt-get install fonts-dejavu fonts-liberation
 ```
-
-**Note:** Helvetica is a proprietary font. You can obtain it from:
-- macOS: `/System/Library/Fonts/Helvetica.ttc`
-- Commercial license from Monotype
-- Adobe Fonts subscription
 
 ## Usage
 
