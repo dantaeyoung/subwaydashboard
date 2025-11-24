@@ -1,5 +1,8 @@
 # WARNING: VIBECODED WITH CLAUDE
 
+For use on a jailbroken Kindle as an e-ink dashboard
+
+-----
 
 # Greenpoint Transit Tools
 
