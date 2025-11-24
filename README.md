@@ -44,12 +44,7 @@ Creates an 800x600 image showing G train arrivals and weather.
 
 Using uv (recommended):
 ```bash
-uv pip install -r requirements.txt
-```
-
-Or using pip:
-```bash
-pip3 install -r requirements.txt
+uv sync
 ```
 
 ### Run SwiftBar Plugin
@@ -81,15 +76,13 @@ uv run mta_display.py --rotate
 - `gtfs-realtime-bindings` - NYC Ferry data
 - `Pillow` - Image generation (for display generator)
 - `requests` - Weather API calls (for display generator)
+- `python-dateutil` - Date parsing for sunrise/sunset
+- `pytz` - Timezone handling
+- `cairosvg` - SVG icon rendering
 
-Install all with uv (recommended):
+Install all with uv:
 ```bash
-uv pip install -r requirements.txt
-```
-
-Or with pip:
-```bash
-pip3 install -r requirements.txt
+uv sync
 ```
 
 ## Project Structure

@@ -10,15 +10,10 @@ Creates an 800x600 PNG image showing real-time subway train arrivals with curren
 
 ## Installation
 
-From the project root directory, using uv (recommended):
+From the project root directory, using uv:
 
 ```bash
-uv pip install -r requirements.txt
-```
-
-Or using pip:
-```bash
-pip3 install -r requirements.txt
+uv sync
 ```
 
 Required dependencies:
